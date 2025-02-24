@@ -118,6 +118,12 @@ rt.setup({
         procMacro = {
           enable = true
         },
+        rustfmt = {
+          enable = true,
+          rangeFormatting = {
+            enable = true
+          },
+        },
       }
     }
   },
@@ -141,3 +147,10 @@ vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 
 -- Neo-tree setup
 vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>')
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.rs",
+  callback = function()
+    vim.lsp.buf.format({ async = false })
+  end,
+})
