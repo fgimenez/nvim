@@ -104,7 +104,6 @@ require("lazy").setup({
           highlights.RustLifetime = { fg = colors.orange, italic = true }
         end
       })
-      
       -- Set the colorscheme
       vim.cmd[[colorscheme tokyonight]]
     end
@@ -128,6 +127,10 @@ lsp.on_attach(function(client, bufnr)
   vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
   vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, opts)
   vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+  vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, {desc = "Show diagnostic error"})
+  vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, {desc = "Previous diagnostic"})
+  vim.keymap.set('n', ']d', vim.diagnostic.goto_next, {desc = "Next diagnostic"})
+  vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, {desc = "List all diagnostics"})
 end)
 
 -- Configure rust-tools
