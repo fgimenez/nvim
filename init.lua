@@ -75,6 +75,40 @@ require("lazy").setup({
       'nvim-lua/plenary.nvim'
     }
   },
+  {
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      -- Configure the colorscheme here
+      require("tokyonight").setup({
+        style = "storm", -- Options: storm, night, moon, day
+        transparent = false,
+        terminal_colors = true,
+        styles = {
+          comments = { italic = true },
+          keywords = { italic = true },
+          functions = {},
+          variables = {},
+        },
+        -- Enhance Rust syntax highlighting specifically
+        on_colors = function(colors)
+          -- You can customize colors here if needed
+        end,
+        on_highlights = function(highlights, colors)
+          -- Rust-specific highlighting
+          highlights.RustAttribute = { fg = colors.purple }
+          highlights.RustDerive = { fg = colors.purple }
+          highlights.RustMacro = { fg = colors.blue1 }
+          highlights.RustCommentLineDoc = { fg = colors.green }
+          highlights.RustLifetime = { fg = colors.orange, italic = true }
+        end
+      })
+      
+      -- Set the colorscheme
+      vim.cmd[[colorscheme tokyonight]]
+    end
+  },
 })
 
 -- LSP Configuration
