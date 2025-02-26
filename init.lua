@@ -216,3 +216,13 @@ cmp.setup({
   },
 })
 
+-- Neo-tree configuration to show hidden files
+require("neo-tree").setup({
+  filesystem = {
+    filtered_items = {
+      visible = true,      -- This makes hidden files visible by default
+      hide_dotfiles = false,
+      hide_gitignored = false,
+    },
+  },
+})
