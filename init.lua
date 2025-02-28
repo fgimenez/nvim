@@ -185,7 +185,7 @@ vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 
 -- Neo-tree setup
-vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>')
+vim.keymap.set('n', '<leader>t', ':Neotree toggle<CR>')
 
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*.rs",
