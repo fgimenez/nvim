@@ -133,6 +133,7 @@ lsp.on_attach(function(client, bufnr)
   vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, {desc = "Previous diagnostic"})
   vim.keymap.set('n', ']d', vim.diagnostic.goto_next, {desc = "Next diagnostic"})
   vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, {desc = "List all diagnostics"})
+  vim.keymap.set('i', '<C-e>', '<End>', {desc = "Move to end of line"})
 end)
 
 -- Configure rust-tools
