@@ -110,10 +110,51 @@ require("lazy").setup({
   },
   'hrsh7th/cmp-buffer',
   'hrsh7th/cmp-path',
+  {
+    'ray-x/go.nvim',
+    dependencies = {
+        'ray-x/guihua.lua',
+        'neovim/nvim-lspconfig',
+    },
+    config = function()
+        require('go').setup()
+    end,
+    ft = {'go', 'gomod'},
+    build = ':lua require("go.install").update_all_sync()',
+  },
 })
 
 -- LSP Configuration
 local lsp = require('lsp-zero').preset({})
+
+-- Configure gopls (Go Language Server)
+lspconfig = require('lspconfig')
+lspconfig.gopls.setup {
+  on_attach = lsp.on_attach,
+  capabilities = lsp.get_capabilities(),
+  settings = {
+    gopls = {
+      analyses = {
+        unusedparams = true,
+      },
+      staticcheck = true,
+      gofumpt = true,
+    },
+  },
+}
+
+-- Add Go-specific autocmd for formatting on save
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.go",
+  callback = function()
+    vim.lsp.buf.format({ async = false })
+  end,
+})
+
+-- Add some Go-specific keymaps if you want
+-- Example: add test coverage
+vim.keymap.set('n', '<leader>gt', '<cmd>!go test -v ./...<CR>', { desc = "Run Go tests" })
+vim.keymap.set('n', '<leader>gc', '<cmd>!go test -cover ./...<CR>', { desc = "Run Go tests with coverage" })
 
 lsp.on_attach(function(client, bufnr)
   -- Enable completion triggered by <c-x><c-o>
@@ -171,7 +212,7 @@ rt.setup({
 
 -- Treesitter configuration
 require('nvim-treesitter.configs').setup({
-  ensure_installed = { "rust", "lua", "toml" },
+  ensure_installed = { "rust", "lua", "toml", "go" },
   auto_install = true,
   highlight = {
     enable = true,
