@@ -210,6 +210,13 @@ rt.setup({
   },
 })
 
+-- Custom command for vertical split with predefined width
+vim.api.nvim_create_user_command('Vsp', function()
+  vim.cmd('vsp')
+  vim.cmd('vertical resize ' .. math.floor(vim.o.columns * 0.45))
+end, {})
+vim.keymap.set('n', '<Leader>vs', ':Vsp<CR>', { silent = true })
+
 -- Treesitter configuration
 require('nvim-treesitter.configs').setup({
   ensure_installed = { "rust", "lua", "toml", "go" },
