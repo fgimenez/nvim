@@ -25,6 +25,8 @@ vim.opt.breakindent = true
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
+vim.opt.wrap = true
+vim.opt.showbreak = "↪ "
 
 -- Set leader key to space
 vim.g.mapleader = " "
