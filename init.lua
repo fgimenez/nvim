@@ -124,6 +124,11 @@ require("lazy").setup({
     ft = {'go', 'gomod'},
     build = ':lua require("go.install").update_all_sync()',
   },
+  {
+    'numToStr/Comment.nvim',
+    opts = {},
+    lazy = false,
+  },
 })
 
 -- LSP Configuration
@@ -276,4 +281,10 @@ require("neo-tree").setup({
       hide_gitignored = false,
     },
   },
+})
+
+-- Comment.nvim setup
+require('Comment').setup({
+  -- Use default mappings (gcc for line comment, gc for visual selection)
+  -- gc{motion} for commenting by motion
 })
