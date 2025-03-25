@@ -129,6 +129,12 @@ require("lazy").setup({
     opts = {},
     lazy = false,
   },
+  {
+    'nvim-pack/nvim-spectre',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    }
+  },
 })
 
 -- LSP Configuration
@@ -287,4 +293,9 @@ require("neo-tree").setup({
 require('Comment').setup({
   -- Use default mappings (gcc for line comment, gc for visual selection)
   -- gc{motion} for commenting by motion
+})
+
+-- Spectre
+vim.keymap.set('n', '<leader>S', '<cmd>lua require("spectre").open()<CR>', {
+  desc = "Open Spectre for search and replace"
 })
