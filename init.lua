@@ -1,6 +1,8 @@
 -- init.lua
 -- Install package manager
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
+
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
     "git",
@@ -141,6 +143,22 @@ require("lazy").setup({
     config = function()
         require('fidget').setup()
     end,
+  },
+  {
+    'lewis6991/gitsigns.nvim',
+    event = "BufReadPre",
+    config = function()
+      require('gitsigns').setup({
+        -- Simple defaults - just show signs
+        signs = {
+          add = { text = '+' },
+          change = { text = '~' },
+          delete = { text = '_' },
+          topdelete = { text = '‾' },
+          changedelete = { text = '~' },
+        },
+      })
+    end
   },
 })
 
