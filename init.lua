@@ -324,3 +324,34 @@ require('Comment').setup({
 vim.keymap.set('n', '<leader>S', '<cmd>lua require("spectre").open()<CR>', {
   desc = "Open Spectre for search and replace"
 })
+
+-- telescope search in directory, uses tab completion for paths
+vim.keymap.set('n', '<leader>f/', function()
+  local input = vim.fn.input({
+    prompt = "Directory: ",
+    default = vim.fn.getcwd() .. "/",
+    completion = "dir"
+  })
+
+  if input ~= "" then
+    builtin.find_files({
+      cwd = input,
+      prompt_title = "📁 " .. vim.fn.fnamemodify(input, ":t")
+    })
+  end
+end)
+
+vim.keymap.set('n', '<leader>g/', function()
+  local input = vim.fn.input({
+    prompt = "Grep in: ",
+    default = vim.fn.getcwd() .. "/",
+    completion = "dir"
+  })
+
+  if input ~= "" then
+    builtin.live_grep({
+      cwd = input,
+      prompt_title = "🔍 " .. vim.fn.fnamemodify(input, ":t")
+    })
+  end
+end)
