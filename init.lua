@@ -46,7 +46,7 @@ require("lazy").setup({
       'L3MON4D3/LuaSnip',
     }
   },
-  
+
   -- Rust Tools
   {
     'simrat39/rust-tools.nvim',
@@ -54,7 +54,7 @@ require("lazy").setup({
       'neovim/nvim-lspconfig',
     },
   },
-  
+
   -- File explorer
   {
     "nvim-neo-tree/neo-tree.nvim",
@@ -65,13 +65,13 @@ require("lazy").setup({
       "MunifTanjim/nui.nvim",
     }
   },
-  
+
   -- Syntax highlighting
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
   },
-  
+
   -- Fuzzy finder
   {
     'nvim-telescope/telescope.nvim',
@@ -355,3 +355,16 @@ vim.keymap.set('n', '<leader>g/', function()
     })
   end
 end)
+
+-- Automatically trim trailing whitespace on save
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  callback = function()
+    -- Save cursor position
+    local save_cursor = vim.fn.getpos(".")
+    -- Remove trailing whitespace
+    vim.cmd([[%s/\s\+$//e]])
+    -- Restore cursor position
+    vim.fn.setpos(".", save_cursor)
+  end,
+})
