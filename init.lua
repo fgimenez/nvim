@@ -2,7 +2,6 @@
 -- Install package manager
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 
-
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
     "git",
@@ -37,19 +36,38 @@ vim.g.mapleader = " "
 require("lazy").setup({
   -- LSP Support
   {
-    'VonHeikemen/lsp-zero.nvim',
-    branch = 'v3.x',
+    'neovim/nvim-lspconfig',
+    event = { 'BufReadPre', 'BufNewFile' },
     dependencies = {
-      'neovim/nvim-lspconfig',
       'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/nvim-cmp',
+    },
+  },
+
+  -- Autocompletion
+  {
+    'hrsh7th/nvim-cmp',
+    event = 'InsertEnter',
+    dependencies = {
       'L3MON4D3/LuaSnip',
-    }
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
+      'hrsh7th/cmp-nvim-lsp',
+      'saadparwaiz1/cmp_luasnip',
+    },
+  },
+
+  -- Snippets
+  {
+    'L3MON4D3/LuaSnip',
+    dependencies = {
+      'rafamadriz/friendly-snippets',
+    },
   },
 
   -- Rust Tools
   {
     'simrat39/rust-tools.nvim',
+    ft = 'rust',
     dependencies = {
       'neovim/nvim-lspconfig',
     },
@@ -112,8 +130,6 @@ require("lazy").setup({
       vim.cmd[[colorscheme tokyonight]]
     end
   },
-  'hrsh7th/cmp-buffer',
-  'hrsh7th/cmp-path',
   {
     'ray-x/go.nvim',
     dependencies = {
@@ -172,13 +188,53 @@ require("lazy").setup({
 })
 
 -- LSP Configuration
-local lsp = require('lsp-zero').preset({})
 
--- Configure gopls (Go Language Server)
+-- Global mappings
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
+vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist)
+
+-- Use LspAttach autocommand to only map the following keys
+-- after the language server attaches to the current buffer
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+  callback = function(ev)
+    -- Enable completion triggered by <c-x><c-o>
+    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+    -- Buffer local mappings.
+    local opts = { buffer = ev.buf }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+    vim.keymap.set('n', '<space>wl', function()
+      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    end, opts)
+    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', '<space>f', function()
+      vim.lsp.buf.format { async = true }
+    end, opts)
+    vim.keymap.set('i', '<C-e>', '<End>', opts)
+  end,
+})
+
+-- Set up lspconfig with completion capabilities
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+-- Configure individual language servers
 local lspconfig = require('lspconfig')
+
+-- Go Language Server
 lspconfig.gopls.setup {
-  on_attach = lsp.on_attach,
-  capabilities = lsp.get_capabilities(),
+  capabilities = capabilities,
   settings = {
     gopls = {
       analyses = {
@@ -190,53 +246,18 @@ lspconfig.gopls.setup {
   },
 }
 
--- Add Go-specific autocmd for formatting on save
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*.go",
-  callback = function()
-    vim.lsp.buf.format({ async = false })
-  end,
-})
-
--- Add some Go-specific keymaps if you want
--- Example: add test coverage
-vim.keymap.set('n', '<leader>gt', '<cmd>!go test -v ./...<CR>', { desc = "Run Go tests" })
-vim.keymap.set('n', '<leader>gc', '<cmd>!go test -cover ./...<CR>', { desc = "Run Go tests with coverage" })
-
-lsp.on_attach(function(client, bufnr)
-  -- Enable completion triggered by <c-x><c-o>
-  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-  -- Key mappings
-  local opts = {buffer = bufnr}
-  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-  vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, opts)
-  vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-  vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, {desc = "Show diagnostic error"})
-  vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, {desc = "Previous diagnostic"})
-  vim.keymap.set('n', ']d', vim.diagnostic.goto_next, {desc = "Next diagnostic"})
-  vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, {desc = "List all diagnostics"})
-  vim.keymap.set('i', '<C-e>', '<End>', {desc = "Move to end of line"})
-end)
-
--- Configure rust-tools
+-- Rust configuration with rust-tools
 local rt = require("rust-tools")
 rt.setup({
   server = {
-    on_attach = function(_, bufnr)
-      -- Hover actions
+    capabilities = capabilities,
+    on_attach = function(client, bufnr)
+      -- Rust specific keymaps
       vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
-      -- Code action groups
       vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
     end,
     settings = {
-      -- rust-analyzer settings
-      ['rust-analyzer'] = {
+      ["rust-analyzer"] = {
         checkOnSave = true,
         check = {
           command = "clippy",
@@ -258,6 +279,89 @@ rt.setup({
     }
   },
 })
+
+-- Lua Language Server (optional, useful for Neovim config editing)
+lspconfig.lua_ls.setup {
+  capabilities = capabilities,
+  settings = {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+      },
+      diagnostics = {
+        globals = { 'vim' },
+      },
+      workspace = {
+        library = vim.api.nvim_get_runtime_file("", true),
+        checkThirdParty = false,
+      },
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
+}
+
+-- Format on save for specific filetypes
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = { "*.rs", "*.go" },
+  callback = function()
+    vim.lsp.buf.format({ async = false })
+  end,
+})
+
+-- Completion setup
+local cmp = require('cmp')
+local luasnip = require('luasnip')
+
+-- Load friendly snippets
+require('luasnip.loaders.from_vscode').lazy_load()
+
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
+  },
+  mapping = cmp.mapping.preset.insert({
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+  }),
+  sources = cmp.config.sources({
+    { name = 'nvim_lsp' },
+    { name = 'luasnip' },
+  }, {
+    { name = 'buffer' },
+    { name = 'path' },
+  }),
+})
+
+-- Go-specific keymaps
+vim.keymap.set('n', '<leader>gt', '<cmd>!go test -v ./...<CR>', { desc = "Run Go tests" })
+vim.keymap.set('n', '<leader>gc', '<cmd>!go test -cover ./...<CR>', { desc = "Run Go tests with coverage" })
 
 -- Custom command for vertical split with predefined width
 vim.api.nvim_create_user_command('Vsp', function()
@@ -285,35 +389,6 @@ vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
 -- Neo-tree setup
 vim.keymap.set('n', '<leader>nt', ':Neotree toggle<CR>')
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*.rs",
-  callback = function()
-    vim.lsp.buf.format({ async = false })
-  end,
-})
-
-local cmp = require('cmp')
-cmp.setup({
-  mapping = cmp.mapping.preset.insert({
-    ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-n>'] = cmp.mapping.select_next_item(),
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.abort(),
-    ['<Tab>'] = cmp.mapping.select_next_item(),
-    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-    -- Change Enter behavior to select instead of adding newline
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
-  }),
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'buffer' },
-    { name = 'path' },
-    { name = 'luasnip' },
-  },
-})
-
 -- Neo-tree configuration to show hidden files
 require("neo-tree").setup({
   filesystem = {
@@ -336,7 +411,7 @@ vim.keymap.set('n', '<leader>S', '<cmd>lua require("spectre").open()<CR>', {
   desc = "Open Spectre for search and replace"
 })
 
--- telescope search in directory, uses tab completion for paths
+-- Telescope search in directory, uses tab completion for paths
 vim.keymap.set('n', '<leader>f/', function()
   local input = vim.fn.input({
     prompt = "Directory: ",
@@ -347,7 +422,7 @@ vim.keymap.set('n', '<leader>f/', function()
   if input ~= "" then
     builtin.find_files({
       cwd = input,
-      prompt_title = "📁 " .. vim.fn.fnamemodify(input, ":t")
+      prompt_title = "🔍 " .. vim.fn.fnamemodify(input, ":t")
     })
   end
 end)
@@ -379,3 +454,4 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     vim.fn.setpos(".", save_cursor)
   end,
 })
+
