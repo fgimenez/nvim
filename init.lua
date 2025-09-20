@@ -175,7 +175,7 @@ require("lazy").setup({
 local lsp = require('lsp-zero').preset({})
 
 -- Configure gopls (Go Language Server)
-lspconfig = require('lspconfig')
+local lspconfig = require('lspconfig')
 lspconfig.gopls.setup {
   on_attach = lsp.on_attach,
   capabilities = lsp.get_capabilities(),
