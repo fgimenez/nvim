@@ -229,11 +229,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
 -- Set up lspconfig with completion capabilities
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
--- Configure individual language servers
-local lspconfig = require('lspconfig')
-
+-- Configure individual language servers using new vim.lsp.config API
 -- Go Language Server
-lspconfig.gopls.setup {
+vim.lsp.config.gopls = {
+  cmd = { 'gopls' },
+  filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
+  root_markers = { 'go.work', 'go.mod', '.git' },
   capabilities = capabilities,
   settings = {
     gopls = {
@@ -245,6 +246,7 @@ lspconfig.gopls.setup {
     },
   },
 }
+vim.lsp.enable('gopls')
 
 -- Rust configuration with rust-tools
 local rt = require("rust-tools")
@@ -280,8 +282,11 @@ rt.setup({
   },
 })
 
--- Lua Language Server (optional, useful for Neovim config editing)
-lspconfig.lua_ls.setup {
+-- Lua Language Server
+vim.lsp.config.lua_ls = {
+  cmd = { 'lua-language-server' },
+  filetypes = { 'lua' },
+  root_markers = { '.luarc.json', '.luarc.jsonc', '.luacheckrc', '.stylua.toml', 'stylua.toml', 'selene.toml', 'selene.yml', '.git' },
   capabilities = capabilities,
   settings = {
     Lua = {
@@ -301,6 +306,7 @@ lspconfig.lua_ls.setup {
     },
   },
 }
+vim.lsp.enable('lua_ls')
 
 -- Format on save for specific filetypes
 vim.api.nvim_create_autocmd("BufWritePre", {
@@ -454,4 +460,3 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     vim.fn.setpos(".", save_cursor)
   end,
 })
-
