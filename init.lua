@@ -64,13 +64,12 @@ require("lazy").setup({
     },
   },
 
-  -- Rust Tools
+  -- Rust Tools - Modern replacement for rust-tools.nvim
   {
-    'simrat39/rust-tools.nvim',
-    ft = 'rust',
-    dependencies = {
-      'neovim/nvim-lspconfig',
-    },
+    'mrcjkb/rustaceanvim',
+    version = '^5',
+    lazy = false,
+    ft = { 'rust' },
   },
 
   -- File explorer
@@ -248,18 +247,13 @@ vim.lsp.config.gopls = {
 }
 vim.lsp.enable('gopls')
 
--- Rust configuration with rust-tools
-local rt = require("rust-tools")
-rt.setup({
+-- Rustaceanvim configuration
+-- This plugin automatically configures rust-analyzer, but we can customize it via g:rustaceanvim
+vim.g.rustaceanvim = {
   server = {
     capabilities = capabilities,
-    on_attach = function(client, bufnr)
-      -- Rust specific keymaps
-      vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
-      vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
-    end,
-    settings = {
-      ["rust-analyzer"] = {
+    default_settings = {
+      ['rust-analyzer'] = {
         checkOnSave = true,
         check = {
           command = "clippy",
@@ -280,7 +274,7 @@ rt.setup({
       }
     }
   },
-})
+}
 
 -- Lua Language Server
 vim.lsp.config.lua_ls = {
