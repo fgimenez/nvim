@@ -136,7 +136,10 @@ require("lazy").setup({
         'neovim/nvim-lspconfig',
     },
     config = function()
-        require('go').setup()
+        require('go').setup({
+          -- codelens in current go.nvim needs nvim 0.12+ (vim.lsp.codelens.enable)
+          lsp_codelens = false,
+        })
     end,
     ft = {'go', 'gomod'},
     build = ':lua require("go.install").update_all_sync()',
