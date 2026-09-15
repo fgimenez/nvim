@@ -37,10 +37,17 @@ require("lazy").setup({
   -- LSP Support
   {
     'neovim/nvim-lspconfig',
-    event = { 'BufReadPre', 'BufNewFile' },
+    lazy = false,
     dependencies = {
       'hrsh7th/cmp-nvim-lsp',
     },
+  },
+
+  -- Formatting (prettier for JS/TS and friends, LSP as fallback)
+  {
+    'stevearc/conform.nvim',
+    event = 'BufWritePre',
+    cmd = { 'ConformInfo' },
   },
 
   -- Autocompletion
@@ -224,7 +231,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', '<space>f', function()
-      vim.lsp.buf.format { async = true }
+      require('conform').format({ async = true, lsp_format = 'fallback' })
     end, opts)
     vim.keymap.set('i', '<C-e>', '<End>', opts)
   end,
@@ -303,6 +310,13 @@ vim.lsp.config.ts_ls = {
 }
 vim.lsp.enable('ts_ls')
 
+-- ESLint Language Server (needs vscode-langservers-extracted; attaches only when
+-- an eslint config file is found in the project). Use :LspEslintFixAll to apply fixes.
+vim.lsp.config('eslint', {
+  capabilities = capabilities,
+})
+vim.lsp.enable('eslint')
+
 -- Lua Language Server
 vim.lsp.config.lua_ls = {
   cmd = { 'lua-language-server' },
@@ -331,9 +345,35 @@ vim.lsp.enable('lua_ls')
 
 -- Format on save for specific filetypes
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.rs", "*.go", "*.ts", "*.tsx", "*.js", "*.jsx" },
+  pattern = { "*.rs", "*.go" },
   callback = function()
     vim.lsp.buf.format({ async = false })
+  end,
+})
+
+-- Formatting with conform.nvim
+-- Prefers the project's node_modules/.bin/prettier, falls back to the global one.
+local conform_formatters_by_ft = {
+  javascript = { 'prettier' },
+  javascriptreact = { 'prettier' },
+  typescript = { 'prettier' },
+  typescriptreact = { 'prettier' },
+  json = { 'prettier' },
+  jsonc = { 'prettier' },
+  css = { 'prettier' },
+  html = { 'prettier' },
+  yaml = { 'prettier' },
+  markdown = { 'prettier' },
+}
+
+require('conform').setup({
+  formatters_by_ft = conform_formatters_by_ft,
+  format_on_save = function(bufnr)
+    -- Only format filetypes listed above; other filetypes keep their own handling
+    if not conform_formatters_by_ft[vim.bo[bufnr].filetype] then
+      return
+    end
+    return { timeout_ms = 3000, lsp_format = 'fallback' }
   end,
 })
 
