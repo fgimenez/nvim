@@ -281,6 +281,28 @@ vim.g.rustaceanvim = {
   },
 }
 
+-- TypeScript / JavaScript Language Server
+vim.lsp.config.ts_ls = {
+  cmd = { 'typescript-language-server', '--stdio' },
+  filetypes = {
+    'javascript', 'javascriptreact', 'javascript.jsx',
+    'typescript', 'typescriptreact', 'typescript.tsx',
+  },
+  root_markers = { 'tsconfig.json', 'jsconfig.json', 'package.json', '.git' },
+  capabilities = capabilities,
+  init_options = {
+    hostInfo = 'neovim',
+    preferences = {
+      includeInlayParameterNameHints = 'literals',
+      includeInlayFunctionParameterTypeHints = true,
+      includeInlayVariableTypeHints = false,
+      includeInlayPropertyDeclarationTypeHints = true,
+      includeInlayFunctionLikeReturnTypeHints = true,
+    },
+  },
+}
+vim.lsp.enable('ts_ls')
+
 -- Lua Language Server
 vim.lsp.config.lua_ls = {
   cmd = { 'lua-language-server' },
@@ -309,7 +331,7 @@ vim.lsp.enable('lua_ls')
 
 -- Format on save for specific filetypes
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.rs", "*.go" },
+  pattern = { "*.rs", "*.go", "*.ts", "*.tsx", "*.js", "*.jsx" },
   callback = function()
     vim.lsp.buf.format({ async = false })
   end,
@@ -377,7 +399,7 @@ vim.keymap.set('n', '<Leader>vs', ':Vsp<CR>', { silent = true })
 
 -- Treesitter configuration
 require('nvim-treesitter.configs').setup({
-  ensure_installed = { "rust", "lua", "toml", "go" },
+  ensure_installed = { "rust", "lua", "toml", "go", "typescript", "tsx", "javascript", "json" },
   auto_install = true,
   highlight = {
     enable = true,
